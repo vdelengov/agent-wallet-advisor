@@ -1,0 +1,26 @@
+[project]
+name = "agent-wallet-advisor"
+version = "0.1.0"
+description = "MCP server that tells an AI shopping agent which credit card earns the most rewards for a purchase"
+license = "MIT"
+license-files = ["LICENSE"]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]>=2.3.0",
+]
+
+[project.scripts]
+agent-wallet-advisor = "agent_wallet_advisor.server:main"
+
+[build-system]
+requires = ["uv_build>=0.13.9,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]

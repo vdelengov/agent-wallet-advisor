@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "agent-wallet-advisor": {
+      "command": "uv",
+      "args": ["run", "agent-wallet-advisor"]
+    }
+  }
+}
