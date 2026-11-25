@@ -142,6 +142,7 @@ def test_whole_foods_demo_unchanged_over_mcp(pinned):
     assert out["best"]["rule"] == {"kind": "category", "category": "groceries", "rate": 6,
                                    "valid_from": None, "valid_until": None, "description": None}
     assert out["best"]["stale_reason"] is None
+    assert out["explanation"].endswith("next best is American Express Gold Card at $4.80. Rates as of 2026-11-24.")
 
 
 def test_best_card_ending_soon_over_mcp(monkeypatch, pinned):

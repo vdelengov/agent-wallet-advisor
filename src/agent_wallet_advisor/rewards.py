@@ -530,6 +530,8 @@ def best_card(
         explanation += f"; next best is {runner_up.card} at ${runner_up.reward_usd:.2f}."
     else:
         explanation += "; it is the only card in the wallet."
+    # The older date is the one a reader should trust least, so that's the one to show.
+    explanation += f" Rates as of {min(r.data_as_of for r in recommended)}."
 
     notes = []
     if guessed:

@@ -9,6 +9,7 @@ Agent: "Buying $120 of groceries at Whole Foods. Which card?"
   -> best_card(merchant="Whole Foods", category="groceries", amount=120)
   <- Blue Cash Preferred: $7.20 back (6% groceries). Runner-up: Amex Gold, $4.80.
      Amex Gold would win if you value Membership Rewards points above 1.50¢.
+     Rates as of 2026-11-24.
 ```
 
 ## Why this matters
@@ -77,7 +78,7 @@ Claude calls `best_card` and answers with the card, the dollar estimate, the run
 
 | Tool | Input | Returns |
 |---|---|---|
-| `best_card` | `merchant`, `category`, `amount`, optional `wallet` (card names), optional `point_values`, optional `stale_after_days`, optional `ending_soon_days` | best card, $ estimate, runner-up (each with the `rule` that set its rate and its data freshness), one-line explanation, point values used, notes, `ending_soon` rules, `warning` |
+| `best_card` | `merchant`, `category`, `amount`, optional `wallet` (card names), optional `point_values`, optional `stale_after_days`, optional `ending_soon_days` | best card, $ estimate, runner-up (each with the `rule` that set its rate and its data freshness), one-line explanation ending in "Rates as of YYYY-MM-DD." (the older data date of the two cards), point values used, notes, `ending_soon` rules, `warning` |
 | `list_cards` | none | each card's issuer, fee, base rate, points program and bonus categories |
 | `explain_rule` | `card` (name, id, or alias such as "amex gold"), optional `stale_after_days`, optional `ending_soon_days` | full rules, caps, points program and its valuation basis, what isn't modeled, source, data freshness, and `rules`: every rule with its dates and status (`active`, `ending_soon`, `upcoming`, `expired`) |
 
@@ -125,7 +126,7 @@ One subtlety: a value is set per program, not per card. Valuing Ultimate Rewards
                 "data_as_of": "2026-11-24", "data_age_days": 0, "stale": false, "stale_reason": null,
                 "rule": {"kind": "category", "category": "groceries", "rate": 6.0,
                          "valid_from": null, "valid_until": null, "description": null}},
-  "explanation": "American Express Gold Card earns 4x points on groceries (valued at 2¢ each) -> $9.60 on $120.00; next best is Blue Cash Preferred Card from American Express at $7.20.",
+  "explanation": "American Express Gold Card earns 4x points on groceries (valued at 2¢ each) -> $9.60 on $120.00; next best is Blue Cash Preferred Card from American Express at $7.20. Rates as of 2026-11-24.",
   "point_values_used": {"amex_membership_rewards": 2.0, "chase_ultimate_rewards": 1.0, "citi_thankyou": 1.0},
   "notes": [
     "American Express Gold Card stays ahead only while American Express Membership Rewards points are worth more than 1.50¢ (assumed 2¢). Pass point_values to use your own.",
@@ -191,6 +192,8 @@ Issuers change terms, so results say how old the data is. `best_card` reports `d
 
 - its `valid_until` has passed (`stale_reason: "valid_until"`): the data describes an offer that has ended, so the issuer page may show something new;
 - it's older than `stale_after_days` since its `as_of` (`stale_reason: "age"`).
+
+The `explanation` text always ends with "Rates as of YYYY-MM-DD.", using the older `data_as_of` of the best and runner-up cards, so an agent that repeats it shows the date without reading the fields.
 
 `stale_after_days` is 90 by default, set per server with the `AGENT_WALLET_STALE_AFTER_DAYS` env var, or per call with the `stale_after_days` argument. When a recommended card is stale, the result has a top-level `warning` naming the card, the reason and the `source_url` to check, so the agent can tell the user or verify before paying.
 

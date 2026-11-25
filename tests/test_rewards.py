@@ -480,3 +480,38 @@ def test_bad_ending_soon_env_var_rejected(monkeypatch, env):
     monkeypatch.setenv(rewards.ENDING_SOON_ENV, env)
     with pytest.raises(ValueError, match=rewards.ENDING_SOON_ENV):
         best_card("Whole Foods", "groceries", 120)
+
+
+# --- data date in the explanation -------------------------------------------------
+
+def test_explanation_ends_with_the_data_date(monkeypatch):
+    pin_date(monkeypatch, AS_OF)
+    r = best_card("Whole Foods", "groceries", 120)
+    assert r.explanation == (
+        "Blue Cash Preferred Card from American Express earns 6% back on groceries -> $7.20 on $120.00; "
+        "next best is American Express Gold Card at $4.80. Rates as of 2026-11-24."
+    )
+
+
+def test_explanation_uses_the_older_of_best_and_runner_up_dates(monkeypatch):
+    cards = copy.deepcopy(rewards.load_cards())
+    next(c for c in cards if c["id"] == "amex-gold")["as_of"] = "2026-10-01"
+    monkeypatch.setattr(rewards, "load_cards", lambda: cards)
+    pin_date(monkeypatch, AS_OF)
+    r = best_card("Whole Foods", "groceries", 120, GOLD_VS_BCP)
+    assert (r.best.data_as_of, r.runner_up.data_as_of) == ("2026-11-24", "2026-10-01")  # fields unchanged
+    assert r.explanation.endswith(" Rates as of 2026-10-01.")
+
+
+def test_explanation_date_for_a_single_card_wallet(monkeypatch):
+    pin_date(monkeypatch, AS_OF)
+    r = best_card("Shell", "gas", 50, ["Active Cash"])
+    assert r.explanation.endswith("it is the only card in the wallet. Rates as of 2026-11-24.")
+
+
+def test_explanation_date_comes_from_the_promotion_when_one_applies(monkeypatch):
+    patch_cards(monkeypatch, "amex-gold", [promo(as_of="2026-11-20")])
+    pin_date(monkeypatch, AS_OF)
+    r = best_card("Whole Foods", "groceries", 120, GOLD_VS_BCP)
+    assert r.best.rule.kind == "promotion"
+    assert r.explanation.endswith(" Rates as of 2026-11-20.")
